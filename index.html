@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAST7.GAMES</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400..700&display=swap');
+
+:root{
+  --bg:#0d0d1a;
+  --panel:#181832;
+  --panel-2:#22224a;
+  --ink:#000000;
+  --paper:#f4f4f4;
+  --muted:#9a9ac0;
+  --red:#e6473d;
+  --blue:#2f9bff;
+  --green:#4fce5d;
+  --yellow:#ffd23f;
+  --purple:#b25ee8;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+img,canvas{image-rendering:pixelated;}
+
+body{
+  background:
+    linear-gradient(180deg, #12122a 0%, var(--bg) 100%);
+  color:var(--paper);
+  font-family:'Pixelify Sans', monospace;
+  font-size:20px;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    radial-gradient(circle at 12% 20%, rgba(255,255,255,0.03) 2px, transparent 2px),
+    radial-gradient(circle at 68% 60%, rgba(255,255,255,0.025) 2px, transparent 2px);
+  background-size:60px 60px, 90px 90px;
+}
+
+/* CRT overlay (toggle-able) */
+.crt-overlay{
+  pointer-events:none;
+  position:fixed;
+  inset:0;
+  z-index:50;
+  background:repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.05) 0px,
+    rgba(255,255,255,0.05) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  transition:opacity .2s;
+}
+body.no-crt .crt-overlay{opacity:0;}
+
+.wrap{max-width:1100px;margin:0 auto;padding:26px 18px 80px;position:relative;z-index:1;}
+
+.screen.hidden{display:none !important;}
+
+/* pixel panel / hard-shadow style used everywhere */
+.pixel-panel{
+  background:var(--panel);
+  border:4px solid var(--ink);
+  box-shadow:6px 6px 0 var(--ink);
+  border-radius:0;
+}
+
+/* Buttons */
+.btn{
+  font-family:'Press Start 2P', monospace;
+  font-size:11px;
+  letter-spacing:1px;
+  background:var(--panel-2);
+  border:3px solid var(--ink);
+  color:var(--paper);
+  padding:12px 16px;
+  cursor:pointer;
+  box-shadow:4px 4px 0 var(--ink);
+  transition:transform .05s;
+}
+.btn:hover{filter:brightness(1.15);}
+.btn:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--ink);}
+.btn-primary{background:var(--red);color:#fff;}
+.btn-danger{background:var(--panel-2);color:var(--red);border-color:var(--red);}
+
+/* ============ ENTRY SCREEN ============ */
+#screen-entry{
+  min-height:80vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.entry-box{
+  padding:36px 32px;
+  max-width:420px;
+  width:100%;
+  text-align:center;
+}
+.logo{
+  font-family:'Press Start 2P', monospace;
+  font-size:clamp(24px,6.4vw,38px);
+  margin:0;
+  color:var(--yellow);
+  text-shadow:4px 4px 0 var(--red);
+  letter-spacing:1px;
+  line-height:1.4;
+}
+.logo-dot{
+  display:block;
+  font-size:0.5em;
+  color:var(--blue);
+  text-shadow:3px 3px 0 var(--ink);
+  margin-top:6px;
+}
+.entry-sub{
+  font-family:'Press Start 2P', monospace;
+  font-size:11px;
+  color:var(--blue);
+  letter-spacing:3px;
+  margin-top:10px;
+}
+.insert-coin{
+  margin-top:22px;
+  font-family:'Press Start 2P', monospace;
+  font-size:11px;
+  color:var(--green);
+  letter-spacing:1px;
+  animation:blink 1.4s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0.15;}}
+
+.entry-form{margin-top:28px;display:flex;flex-direction:column;gap:10px;align-items:stretch;}
+.entry-form label{
+  font-family:'Press Start 2P', monospace;
+  font-size:10px;
+  color:var(--muted);
+  text-align:left;
+  letter-spacing:1px;
+}
+.pixel-input{
+  font-family:'Press Start 2P', monospace;
+  font-size:14px;
+  background:var(--bg);
+  border:3px solid var(--ink);
+  color:var(--paper);
+  padding:14px 12px;
+  box-shadow:4px 4px 0 var(--ink);
+  outline:none;
+}
+.pixel-input:focus{border-color:var(--blue);}
+.entry-form .btn{margin-top:8px;}
+
+/* ============ TOPBAR ============ */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px 18px;
+  margin-bottom:24px;
+  flex-wrap:wrap;
+}
+.player-badge{
+  font-family:'Press Start 2P', monospace;
+  font-size:11px;
+  color:var(--yellow);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.player-badge::before{content:"🕹";}
+.topbar-actions{display:flex;gap:10px;}
+.icon-btn{
+  font-family:'Press Start 2P', monospace;
+  font-size:14px;
+  background:var(--panel-2);
+  border:3px solid var(--ink);
+  color:var(--paper);
+  padding:10px 12px;
+  cursor:pointer;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.icon-btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink);}
+
+/* Marquee title on arcade floor */
+.marquee{text-align:center;padding:6px 16px 8px;}
+.marquee h2{
+  font-family:'Press Start 2P', monospace;
+  font-size:clamp(20px,5vw,32px);
+  color:var(--paper);
+  text-shadow:3px 3px 0 var(--purple);
+  margin:0 0 8px;
+  letter-spacing:2px;
+}
+.marquee p{color:var(--muted);font-size:18px;letter-spacing:1px;margin:0;}
+
+/* Cabinets grid */
+.cabinets-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:24px;
+  margin-top:30px;
+}
+.cabinet{
+  --accent:var(--blue);
+  background:var(--panel);
+  border:4px solid var(--ink);
+  box-shadow:6px 6px 0 var(--ink);
+  padding:14px;
+  cursor:pointer;
+  text-align:left;
+  font-family:inherit;
+  color:var(--paper);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  transition:transform .06s;
+}
+.cabinet:hover, .cabinet:focus-visible{outline:none;filter:brightness(1.08);}
+.cabinet:active{transform:translate(4px,4px);box-shadow:2px 2px 0 var(--ink);}
+.cabinet-marquee{
+  font-family:'Press Start 2P', monospace;
+  font-size:12px;
+  letter-spacing:1px;
+  color:var(--accent);
+}
+.cabinet-screen{
+  background:#050510;
+  border:3px solid var(--ink);
+  height:120px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px;
+}
+.cabinet-slot{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  border-top:2px dashed #33335c;
+  padding-top:10px;
+}
+.coin-label{
+  font-family:'Press Start 2P', monospace;
+  font-size:11px;
+  letter-spacing:2px;
+  color:var(--accent);
+}
+.coin-label::before{content:"▶ ";}
+
+/* mini previews */
+.preview-velha{display:grid;grid-template-columns:repeat(3,20px);grid-template-rows:repeat(3,20px);gap:4px;}
+.preview-velha div{border:2px solid #33335c;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--blue);}
+.preview-memoria{display:grid;grid-template-columns:repeat(4,16px);grid-template-rows:repeat(2,16px);gap:4px;}
+.preview-memoria div{background:#33335c;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--purple);}
+.preview-cobrinha{display:grid;grid-template-columns:repeat(8,10px);grid-template-rows:repeat(6,10px);gap:2px;}
+.preview-cobrinha div{background:#0d1f14;}
+.preview-cobrinha div.on{background:var(--green);}
+.preview-2048{display:grid;grid-template-columns:repeat(2,26px);grid-template-rows:repeat(2,26px);gap:4px;}
+.preview-2048 div{background:#33335c;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--yellow);}
+
+/* Game / settings screens */
+.back-btn{
+  font-family:'Press Start 2P', monospace;
+  background:transparent;
+  border:3px solid #33335c;
+  color:var(--muted);
+  font-size:11px;
+  padding:10px 14px;
+  cursor:pointer;
+  letter-spacing:1px;
+  margin-bottom:20px;
+}
+.back-btn:hover{color:var(--paper);border-color:var(--paper);}
+
+.cabinet-frame{
+  --accent:var(--blue);
+  background:var(--panel);
+  border:4px solid var(--accent);
+  box-shadow:6px 6px 0 var(--ink);
+  padding:26px;
+}
+.game-title{
+  font-family:'Press Start 2P', monospace;
+  font-size:16px;
+  color:var(--accent);
+  text-shadow:3px 3px 0 var(--ink);
+  margin:0 0 18px;
+  letter-spacing:1px;
+}
+.game-status{color:var(--muted);font-size:19px;margin-bottom:14px;min-height:26px;}
+.game-controls{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;}
+.score-row{display:flex;gap:22px;font-size:19px;color:var(--paper);margin-bottom:10px;}
+.score-row b{color:var(--accent);}
+
+/* Jogo da Velha */
+.velha-board{display:grid;grid-template-columns:repeat(3,90px);grid-template-rows:repeat(3,90px);gap:8px;}
+.velha-cell{
+  background:#050510;border:2px solid #33335c;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Press Start 2P',monospace;font-size:30px;cursor:pointer;color:var(--paper);
+}
+.velha-cell:hover{border-color:var(--accent);}
+.velha-cell.x{color:var(--blue);}
+.velha-cell.o{color:var(--purple);}
+
+/* Memoria */
+.memoria-board{display:grid;grid-template-columns:repeat(4,74px);gap:8px;}
+@media(max-width:520px){.memoria-board{grid-template-columns:repeat(4,64px);}}
+.memoria-card{
+  aspect-ratio:1;background:var(--bg);border:2px solid #33335c;
+  display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer;
+}
+.memoria-card.flipped, .memoria-card.matched{background:#050510;border-color:var(--accent);}
+.memoria-card.matched{opacity:0.5;cursor:default;}
+
+/* Cobrinha */
+#cobrinha-canvas{background:#050510;border:3px solid #33335c;display:block;max-width:100%;}
+.dpad{display:grid;grid-template-columns:repeat(3,50px);grid-template-rows:repeat(3,50px);gap:4px;margin-top:14px;}
+.dpad button{
+  background:var(--bg);border:2px solid #33335c;color:var(--accent);
+  font-size:18px;cursor:pointer;
+}
+.dpad button:hover{border-color:var(--accent);}
+
+/* 2048 */
+.g2048-board{
+  display:grid;grid-template-columns:repeat(4,74px);grid-template-rows:repeat(4,74px);gap:8px;
+  background:#050510;padding:8px;
+}
+@media(max-width:520px){.g2048-board{grid-template-columns:repeat(4,64px);grid-template-rows:repeat(4,64px);}}
+.g2048-tile{
+  background:#33335c;display:flex;align-items:center;justify-content:center;
+  font-family:'Press Start 2P',monospace;font-size:16px;color:var(--paper);
+}
+.g2048-tile[data-v="0"]{background:#181832;}
+.g2048-tile[data-v="8"]{background:var(--yellow);color:#050510;}
+.g2048-tile[data-v="16"]{background:#ffb23e;color:#050510;}
+.g2048-tile[data-v="32"]{background:#ff8f3e;color:#050510;}
+.g2048-tile[data-v="64"]{background:var(--red);color:#fff;}
+.g2048-tile[data-v="128"],.g2048-tile[data-v="256"],.g2048-tile[data-v="512"]{background:var(--purple);color:#fff;font-size:14px;}
+.g2048-tile[data-v="1024"],.g2048-tile[data-v="2048"]{background:var(--green);color:#050510;font-size:12px;}
+
+.hint{color:var(--muted);font-size:15px;margin-top:16px;}
+
+/* Settings */
+.settings-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  padding:16px 0;
+  border-bottom:2px dashed #33335c;
+}
+.settings-row:last-of-type{border-bottom:none;}
+.settings-row label{
+  font-family:'Press Start 2P', monospace;
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:1px;
+}
+.settings-name-group{display:flex;gap:10px;flex:1;min-width:220px;}
+.settings-name-group .pixel-input{flex:1;box-shadow:none;padding:10px;font-size:12px;}
+.settings-feedback{font-size:15px;color:var(--green);min-height:20px;margin-top:10px;}
+
+footer{text-align:center;color:var(--muted);font-size:15px;padding:30px 0 10px;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<div class="crt-overlay"></div>
+
+<div class="wrap">
+
+  <!-- ENTRY / ACCOUNT CREATION SCREEN -->
+  <section id="screen-entry" class="screen">
+    <div class="entry-box pixel-panel">
+      <h1 class="logo">FAST7<span class="logo-dot">.GAMES</span></h1>
+      <p class="entry-sub">8-BIT ARCADE</p>
+      <div class="insert-coin">◆ PRESSIONE START ◆</div>
+      <div id="entry-form" class="entry-form">
+        <label for="player-name">DIGITE SEU NOME</label>
+        <input id="player-name" class="pixel-input" maxlength="12" placeholder="JOGADOR1" autocomplete="off" />
+        <button type="button" id="entry-submit" class="btn btn-primary">COMEÇAR »</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCADE FLOOR SCREEN -->
+  <section id="screen-arcade" class="screen hidden">
+    <div class="topbar">
+      <div class="player-badge" id="player-badge-arcade">JOGADOR1</div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="open-settings" title="Configurações">⚙</button>
+      </div>
+    </div>
+
+    <header class="marquee">
+      <h2>ESCOLHA SEU JOGO</h2>
+      <p>quatro fichas · quatro telas · escolha a sua</p>
+    </header>
+
+    <div class="cabinets-grid">
+
+      <button class="cabinet" data-game="velha" style="--accent:var(--blue)">
+        <div class="cabinet-marquee">JOGO DA VELHA</div>
+        <div class="cabinet-screen">
+          <div class="preview-velha">
+            <div>✕</div><div></div><div>○</div>
+            <div></div><div>✕</div><div></div>
+            <div>○</div><div></div><div>✕</div>
+          </div>
+        </div>
+        <div class="cabinet-slot"><span class="coin-label">JOGAR</span></div>
+      </button>
+
+      <button class="cabinet" data-game="memoria" style="--accent:var(--purple)">
+        <div class="cabinet-marquee">JOGO DA MEMÓRIA</div>
+        <div class="cabinet-screen">
+          <div class="preview-memoria">
+            <div>?</div><div>?</div><div>?</div><div>?</div>
+            <div>?</div><div>?</div><div>?</div><div>?</div>
+          </div>
+        </div>
+        <div class="cabinet-slot"><span class="coin-label">JOGAR</span></div>
+      </button>
+
+      <button class="cabinet" data-game="cobrinha" style="--accent:var(--green)">
+        <div class="cabinet-marquee">COBRINHA</div>
+        <div class="cabinet-screen">
+          <div class="preview-cobrinha" id="preview-snake"></div>
+        </div>
+        <div class="cabinet-slot"><span class="coin-label">JOGAR</span></div>
+      </button>
+
+      <button class="cabinet" data-game="g2048" style="--accent:var(--yellow)">
+        <div class="cabinet-marquee">2048</div>
+        <div class="cabinet-screen">
+          <div class="preview-2048">
+            <div>2</div><div>4</div><div>8</div><div>16</div>
+          </div>
+        </div>
+        <div class="cabinet-slot"><span class="coin-label">JOGAR</span></div>
+      </button>
+
+    </div>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section id="screen-game" class="screen hidden">
+    <button class="back-btn" id="back-btn">« VOLTAR AO FAST7</button>
+    <div id="game-container"></div>
+  </section>
+
+  <!-- SETTINGS SCREEN -->
+  <section id="screen-settings" class="screen hidden">
+    <button class="back-btn" id="settings-back">« VOLTAR AO FAST7</button>
+    <div class="cabinet-frame" style="--accent:var(--yellow)">
+      <h2 class="game-title">CONFIGURAÇÕES</h2>
+
+      <div class="settings-row">
+        <label>NOME DO JOGADOR</label>
+        <div class="settings-name-group">
+          <input id="settings-name" class="pixel-input" maxlength="12" />
+          <button class="btn" id="settings-save-name">SALVAR</button>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <label>EFEITO CRT</label>
+        <button class="btn" id="settings-crt-toggle">LIGADO</button>
+      </div>
+
+      <div class="settings-row">
+        <label>RECORDES SALVOS</label>
+        <button class="btn btn-danger" id="settings-reset-scores">ZERAR RECORDES</button>
+      </div>
+
+      <div class="settings-row">
+        <label>CONTA</label>
+        <button class="btn btn-danger" id="settings-logout">SAIR DA CONTA</button>
+      </div>
+
+      <div class="settings-feedback" id="settings-feedback"></div>
+    </div>
+  </section>
+
+  <footer>FAST7.GAMES — feito para quem cresceu de joystick na mão</footer>
+</div>
+
+<script>
+/* ---------- storage helpers ---------- */
+function safeGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function safeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function safeRemove(k){ try{ localStorage.removeItem(k); }catch(e){} }
+
+/* ---------- screen manager ---------- */
+const screens = document.querySelectorAll('.screen');
+function showScreen(id){
+  screens.forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------- static preview: cobrinha pixels ---------- */
+(function(){
+  const grid = document.getElementById('preview-snake');
+  const cells = 48;
+  const onCells = [10,11,12,20,28];
+  for(let i=0;i<cells;i++){
+    const d = document.createElement('div');
+    if(onCells.includes(i)) d.classList.add('on');
+    grid.appendChild(d);
+  }
+})();
+
+/* ---------- CRT toggle ---------- */
+const crtToggleBtn = document.getElementById('settings-crt-toggle');
+function applyCrtSetting(){
+  const off = safeGet('fliperama_crt_off') === '1';
+  document.body.classList.toggle('no-crt', off);
+  crtToggleBtn.textContent = off ? 'DESLIGADO' : 'LIGADO';
+}
+crtToggleBtn.addEventListener('click', ()=>{
+  const off = safeGet('fliperama_crt_off') === '1';
+  safeSet('fliperama_crt_off', off ? '0' : '1');
+  applyCrtSetting();
+});
+applyCrtSetting();
+
+/* ---------- player / entry flow ---------- */
+const entrySubmitBtn = document.getElementById('entry-submit');
+const playerNameInput = document.getElementById('player-name');
+const playerBadgeArcade = document.getElementById('player-badge-arcade');
+const settingsNameInput = document.getElementById('settings-name');
+
+function updateNameDisplays(name){
+  playerBadgeArcade.textContent = name;
+  settingsNameInput.value = name;
+}
+
+function submitEntry(){
+  const name = (playerNameInput.value || '').trim().toUpperCase().slice(0,12) || 'JOGADOR1';
+  safeSet('fliperama_player', name);
+  updateNameDisplays(name);
+  showScreen('screen-arcade');
+}
+
+entrySubmitBtn.addEventListener('click', submitEntry);
+playerNameInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    submitEntry();
+  }
+});
+
+const existingPlayer = safeGet('fliperama_player');
+if(existingPlayer){
+  updateNameDisplays(existingPlayer);
+  showScreen('screen-arcade');
+} else {
+  showScreen('screen-entry');
+}
+
+/* ---------- settings screen ---------- */
+document.getElementById('open-settings').addEventListener('click', ()=>{
+  document.getElementById('settings-feedback').textContent = '';
+  showScreen('screen-settings');
+});
+document.getElementById('settings-back').addEventListener('click', ()=>showScreen('screen-arcade'));
+
+document.getElementById('settings-save-name').addEventListener('click', ()=>{
+  const name = (settingsNameInput.value || '').trim().toUpperCase().slice(0,12) || 'JOGADOR1';
+  safeSet('fliperama_player', name);
+  updateNameDisplays(name);
+  const fb = document.getElementById('settings-feedback');
+  fb.textContent = 'NOME SALVO!';
+  setTimeout(()=>{ fb.textContent=''; }, 1800);
+});
+
+document.getElementById('settings-reset-scores').addEventListener('click', ()=>{
+  safeRemove('fliperama_snake_best');
+  safeRemove('fliperama_2048_best');
+  const fb = document.getElementById('settings-feedback');
+  fb.textContent = 'RECORDES ZERADOS!';
+  setTimeout(()=>{ fb.textContent=''; }, 1800);
+});
+
+document.getElementById('settings-logout').addEventListener('click', ()=>{
+  safeRemove('fliperama_player');
+  playerNameInput.value = '';
+  showScreen('screen-entry');
+});
+
+/* ---------- game navigation ---------- */
+const gameContainer = document.getElementById('game-container');
+const backBtn = document.getElementById('back-btn');
+let activeCleanup = null;
+
+document.querySelectorAll('.cabinet').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const game = btn.dataset.game;
+    gameContainer.innerHTML = '';
+    if(game==='velha') activeCleanup = renderVelha(gameContainer);
+    if(game==='memoria') activeCleanup = renderMemoria(gameContainer);
+    if(game==='cobrinha') activeCleanup = renderCobrinha(gameContainer);
+    if(game==='g2048') activeCleanup = render2048(gameContainer);
+    showScreen('screen-game');
+  });
+});
+
+backBtn.addEventListener('click', ()=>{
+  if(activeCleanup) activeCleanup();
+  activeCleanup = null;
+  gameContainer.innerHTML = '';
+  showScreen('screen-arcade');
+});
+
+/* ================= JOGO DA VELHA ================= */
+function renderVelha(root){
+  root.innerHTML = `
+    <div class="cabinet-frame" style="--accent:var(--blue)">
+      <h2 class="game-title">JOGO DA VELHA</h2>
+      <div class="game-status" id="velha-status">Vez do jogador ✕</div>
+      <div class="velha-board" id="velha-board"></div>
+      <div class="game-controls">
+        <button class="btn" id="velha-reset">REINICIAR</button>
+      </div>
+    </div>
+  `;
+  const boardEl = root.querySelector('#velha-board');
+  const statusEl = root.querySelector('#velha-status');
+  let board, current, over;
+
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+  function init(){
+    board = Array(9).fill(null);
+    current = 'x';
+    over = false;
+    draw();
+    statusEl.textContent = 'Vez do jogador ✕';
+  }
+
+  function draw(){
+    boardEl.innerHTML = '';
+    board.forEach((v,i)=>{
+      const cell = document.createElement('div');
+      cell.className = 'velha-cell' + (v ? ' '+v : '');
+      cell.textContent = v ? (v==='x'?'✕':'○') : '';
+      cell.addEventListener('click', ()=>play(i));
+      boardEl.appendChild(cell);
+    });
+  }
+
+  function play(i){
+    if(over || board[i]) return;
+    board[i] = current;
+    const winLine = wins.find(([a,b,c])=>board[a] && board[a]===board[b] && board[a]===board[c]);
+    if(winLine){
+      over = true;
+      statusEl.textContent = `Jogador ${current==='x'?'✕':'○'} venceu!`;
+    } else if(board.every(Boolean)){
+      over = true;
+      statusEl.textContent = 'Empate!';
+    } else {
+      current = current === 'x' ? 'o' : 'x';
+      statusEl.textContent = `Vez do jogador ${current==='x'?'✕':'○'}`;
+    }
+    draw();
+  }
+
+  root.querySelector('#velha-reset').addEventListener('click', init);
+  init();
+  return ()=>{};
+}
+
+/* ================= JOGO DA MEMÓRIA ================= */
+function renderMemoria(root){
+  root.innerHTML = `
+    <div class="cabinet-frame" style="--accent:var(--purple)">
+      <h2 class="game-title">JOGO DA MEMÓRIA</h2>
+      <div class="score-row">Movimentos: <b id="memoria-moves">0</b> &nbsp; Pares: <b id="memoria-pairs">0</b>/8</div>
+      <div class="game-status" id="memoria-status">Encontre os pares!</div>
+      <div class="memoria-board" id="memoria-board"></div>
+      <div class="game-controls">
+        <button class="btn" id="memoria-reset">REINICIAR</button>
+      </div>
+    </div>
+  `;
+  const icons = ['👾','🕹️','👻','⭐','🍄','🎮','🏆','💎'];
+  const boardEl = root.querySelector('#memoria-board');
+  const movesEl = root.querySelector('#memoria-moves');
+  const pairsEl = root.querySelector('#memoria-pairs');
+  const statusEl = root.querySelector('#memoria-status');
+  let cards, flipped, matched, moves, lock;
+
+  function init(){
+    cards = [...icons, ...icons]
+      .map(v=>({v, key:Math.random()}))
+      .sort((a,b)=>a.key-b.key);
+    flipped = [];
+    matched = new Set();
+    moves = 0;
+    lock = false;
+    movesEl.textContent = '0';
+    pairsEl.textContent = '0';
+    statusEl.textContent = 'Encontre os pares!';
+    draw();
+  }
+
+  function draw(){
+    boardEl.innerHTML = '';
+    cards.forEach((c,i)=>{
+      const el = document.createElement('div');
+      const isOpen = flipped.includes(i) || matched.has(i);
+      el.className = 'memoria-card' + (isOpen?' flipped':'') + (matched.has(i)?' matched':'');
+      el.textContent = isOpen ? c.v : '❔';
+      el.addEventListener('click', ()=>flip(i));
+      boardEl.appendChild(el);
+    });
+  }
+
+  function flip(i){
+    if(lock || flipped.includes(i) || matched.has(i)) return;
+    flipped.push(i);
+    draw();
+    if(flipped.length===2){
+      moves++;
+      movesEl.textContent = moves;
+      lock = true;
+      const [a,b] = flipped;
+      if(cards[a].v === cards[b].v){
+        matched.add(a); matched.add(b);
+        pairsEl.textContent = matched.size/2;
+        flipped = [];
+        lock = false;
+        draw();
+        if(matched.size === cards.length){
+          statusEl.textContent = `Parabéns! Você venceu em ${moves} movimentos.`;
+        }
+      } else {
+        setTimeout(()=>{
+          flipped = [];
+          lock = false;
+          draw();
+        }, 700);
+      }
+    }
+  }
+
+  root.querySelector('#memoria-reset').addEventListener('click', init);
+  init();
+  return ()=>{};
+}
+
+/* ================= COBRINHA (SNAKE) ================= */
+function renderCobrinha(root){
+  root.innerHTML = `
+    <div class="cabinet-frame" style="--accent:var(--green)">
+      <h2 class="game-title">COBRINHA</h2>
+      <div class="score-row">Pontos: <b id="snake-score">0</b> &nbsp; Recorde: <b id="snake-best">0</b></div>
+      <div class="game-status" id="snake-status">Use as setas ou WASD para jogar</div>
+      <canvas id="cobrinha-canvas" width="320" height="320"></canvas>
+      <div class="dpad">
+        <div></div><button id="dp-up">▲</button><div></div>
+        <button id="dp-left">◀</button><div></div><button id="dp-right">▶</button>
+        <div></div><button id="dp-down">▼</button><div></div>
+      </div>
+      <div class="game-controls">
+        <button class="btn" id="snake-reset">REINICIAR</button>
+      </div>
+      <div class="hint">Pausar: barra de espaço</div>
+    </div>
+  `;
+  const canvas = root.querySelector('#cobrinha-canvas');
+  const ctx = canvas.getContext('2d');
+  const cell = 16;
+  const cols = canvas.width / cell;
+  const rows = canvas.height / cell;
+  const scoreEl = root.querySelector('#snake-score');
+  const bestEl = root.querySelector('#snake-best');
+  const statusEl = root.querySelector('#snake-status');
+  let best = Number(safeGet('fliperama_snake_best') || 0);
+  bestEl.textContent = best;
+
+  let snake, dir, nextDir, food, score, over, timer;
+
+  function placeFood(){
+    let pos;
+    do{
+      pos = {x:Math.floor(Math.random()*cols), y:Math.floor(Math.random()*rows)};
+    }while(snake.some(s=>s.x===pos.x && s.y===pos.y));
+    food = pos;
+  }
+
+  function init(){
+    snake = [{x:8,y:8},{x:7,y:8},{x:6,y:8}];
+    dir = {x:1,y:0};
+    nextDir = {x:1,y:0};
+    score = 0;
+    over = false;
+    scoreEl.textContent = 0;
+    statusEl.textContent = 'Use as setas ou WASD para jogar';
+    placeFood();
+    if(timer) clearInterval(timer);
+    timer = setInterval(tick, 110);
+    draw();
+  }
+
+  function tick(){
+    if(over) return;
+    dir = nextDir;
+    const head = {x:snake[0].x+dir.x, y:snake[0].y+dir.y};
+
+    if(head.x<0 || head.x>=cols || head.y<0 || head.y>=rows || snake.some(s=>s.x===head.x && s.y===head.y)){
+      over = true;
+      clearInterval(timer);
+      statusEl.textContent = 'Fim de jogo! Aperte reiniciar.';
+      if(score>best){
+        best = score;
+        bestEl.textContent = best;
+        safeSet('fliperama_snake_best', best);
+      }
+      return;
+    }
+
+    snake.unshift(head);
+    if(head.x===food.x && head.y===food.y){
+      score++;
+      scoreEl.textContent = score;
+      placeFood();
+    } else {
+      snake.pop();
+    }
+    draw();
+  }
+
+  function draw(){
+    ctx.fillStyle = '#050510';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#e6473d';
+    ctx.fillRect(food.x*cell+2, food.y*cell+2, cell-4, cell-4);
+    snake.forEach((s,i)=>{
+      ctx.fillStyle = i===0 ? '#4fce5d' : '#2b7a38';
+      ctx.fillRect(s.x*cell+1, s.y*cell+1, cell-2, cell-2);
+    });
+  }
+
+  function setDir(x,y){
+    if(dir.x === -x && dir.y === -y) return;
+    nextDir = {x,y};
+  }
+
+  function keyHandler(e){
+    const k = e.key.toLowerCase();
+    if(['arrowup','w'].includes(k)) setDir(0,-1);
+    else if(['arrowdown','s'].includes(k)) setDir(0,1);
+    else if(['arrowleft','a'].includes(k)) setDir(-1,0);
+    else if(['arrowright','d'].includes(k)) setDir(1,0);
+    else if(k===' '){
+      if(timer){ clearInterval(timer); timer=null; statusEl.textContent='Pausado'; }
+      else if(!over){ timer=setInterval(tick,110); statusEl.textContent=''; }
+    }
+  }
+
+  document.addEventListener('keydown', keyHandler);
+  root.querySelector('#dp-up').addEventListener('click', ()=>setDir(0,-1));
+  root.querySelector('#dp-down').addEventListener('click', ()=>setDir(0,1));
+  root.querySelector('#dp-left').addEventListener('click', ()=>setDir(-1,0));
+  root.querySelector('#dp-right').addEventListener('click', ()=>setDir(1,0));
+  root.querySelector('#snake-reset').addEventListener('click', init);
+
+  init();
+  return ()=>{
+    document.removeEventListener('keydown', keyHandler);
+    if(timer) clearInterval(timer);
+  };
+}
+
+/* ================= 2048 ================= */
+function render2048(root){
+  root.innerHTML = `
+    <div class="cabinet-frame" style="--accent:var(--yellow)">
+      <h2 class="game-title">2048</h2>
+      <div class="score-row">Pontos: <b id="g2048-score">0</b> &nbsp; Recorde: <b id="g2048-best">0</b></div>
+      <div class="game-status" id="g2048-status">Use as setas para juntar os blocos</div>
+      <div class="g2048-board" id="g2048-board"></div>
+      <div class="game-controls">
+        <button class="btn" id="g2048-reset">NOVO JOGO</button>
+      </div>
+      <div class="hint">Em celular: deslize o dedo sobre o tabuleiro</div>
+    </div>
+  `;
+  const boardEl = root.querySelector('#g2048-board');
+  const scoreEl = root.querySelector('#g2048-score');
+  const bestEl = root.querySelector('#g2048-best');
+  const statusEl = root.querySelector('#g2048-status');
+  let grid, score, best, over;
+
+  best = Number(safeGet('fliperama_2048_best') || 0);
+  bestEl.textContent = best;
+
+  function init(){
+    grid = Array.from({length:4},()=>Array(4).fill(0));
+    score = 0;
+    over = false;
+    scoreEl.textContent = 0;
+    statusEl.textContent = 'Use as setas para juntar os blocos';
+    addTile(); addTile();
+    draw();
+  }
+
+  function addTile(){
+    const empty = [];
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(grid[r][c]===0) empty.push([r,c]);
+    if(!empty.length) return;
+    const [r,c] = empty[Math.floor(Math.random()*empty.length)];
+    grid[r][c] = Math.random()<0.9 ? 2 : 4;
+  }
+
+  function draw(){
+    boardEl.innerHTML = '';
+    for(let r=0;r<4;r++){
+      for(let c=0;c<4;c++){
+        const v = grid[r][c];
+        const t = document.createElement('div');
+        t.className = 'g2048-tile';
+        t.dataset.v = v;
+        t.textContent = v || '';
+        boardEl.appendChild(t);
+      }
+    }
+  }
+
+  function slideRow(row){
+    let arr = row.filter(v=>v!==0);
+    let moved = false;
+    for(let i=0;i<arr.length-1;i++){
+      if(arr[i] === arr[i+1]){
+        arr[i]*=2;
+        score += arr[i];
+        arr.splice(i+1,1);
+        moved = true;
+      }
+    }
+    while(arr.length<4) arr.push(0);
+    if(arr.some((v,i)=>v!==row[i])) moved = true;
+    return {arr, moved};
+  }
+
+  function rotateGrid(g){
+    const n = 4;
+    const res = Array.from({length:n},()=>Array(n).fill(0));
+    for(let r=0;r<n;r++) for(let c=0;c<n;c++) res[c][n-1-r] = g[r][c];
+    return res;
+  }
+
+  function move(dir){
+    if(over) return;
+    let moved = false;
+    let rotations = {left:0, up:3, right:2, down:1}[dir];
+    let g = grid;
+    for(let i=0;i<rotations;i++) g = rotateGrid(g);
+
+    const newGrid = [];
+    for(let r=0;r<4;r++){
+      const {arr, moved:m} = slideRow(g[r]);
+      if(m) moved = true;
+      newGrid.push(arr);
+    }
+
+    let restored = newGrid;
+    for(let i=0;i<(4-rotations)%4;i++) restored = rotateGrid(restored);
+
+    if(moved){
+      grid = restored;
+      scoreEl.textContent = score;
+      if(score>best){ best=score; bestEl.textContent=best; safeSet('fliperama_2048_best', best); }
+      addTile();
+      draw();
+      checkEnd();
+    }
+  }
+
+  function checkEnd(){
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++){
+      if(grid[r][c]===2048){ over=true; statusEl.textContent='Você fez o 2048! 🎉'; return; }
+    }
+    const hasEmpty = grid.some(row=>row.some(v=>v===0));
+    if(hasEmpty) return;
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++){
+      const v = grid[r][c];
+      if(c<3 && grid[r][c+1]===v) return;
+      if(r<3 && grid[r+1][c]===v) return;
+    }
+    over = true;
+    statusEl.textContent = 'Fim de jogo! Nenhum movimento possível.';
+  }
+
+  function keyHandler(e){
+    const map = {ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down'};
+    if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
+  }
+
+  let touchStart = null;
+  function touchStartHandler(e){ touchStart = e.touches[0]; }
+  function touchEndHandler(e){
+    if(!touchStart) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStart.clientX;
+    const dy = t.clientY - touchStart.clientY;
+    if(Math.max(Math.abs(dx),Math.abs(dy)) > 20){
+      if(Math.abs(dx) > Math.abs(dy)) move(dx>0 ? 'right':'left');
+      else move(dy>0 ? 'down':'up');
+    }
+    touchStart = null;
+  }
+
+  document.addEventListener('keydown', keyHandler);
+  boardEl.addEventListener('touchstart', touchStartHandler);
+  boardEl.addEventListener('touchend', touchEndHandler);
+  root.querySelector('#g2048-reset').addEventListener('click', init);
+
+  init();
+  return ()=>{
+    document.removeEventListener('keydown', keyHandler);
+    boardEl.removeEventListener('touchstart', touchStartHandler);
+    boardEl.removeEventListener('touchend', touchEndHandler);
+  };
+}
+</script>
+</body>
+</html>
